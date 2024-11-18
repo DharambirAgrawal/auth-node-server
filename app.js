@@ -1,13 +1,17 @@
 // src/server.js
-import express from "express";
 import dotenv from "dotenv";
+dotenv.config();
+import express from "express";
 import { errorHandler, AppError, asyncHandler } from './src/errors/index.js';
 import { logger } from "./src/utils/logger.js";
 
 // Load environment variables
-dotenv.config();
 
 const app = express();
+
+//connect DB
+import { testDbConnection } from "./src/config/database.js";
+testDbConnection();
 
 // Middleware
 app.use(express.json());
