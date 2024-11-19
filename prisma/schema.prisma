@@ -7,10 +7,70 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+
 model User {
-  id    Int    @id @default(autoincrement())
-  name  String
-  email String @unique
+  id                    String    @id @default(uuid())
+  name                  String
+  email                 String    @unique
+  password              String    // Hashed password
+  accountStatus         AccountStatus @default(inactive)
+  isEmailVerified      Boolean   @default(false)
+  verificationToken     String?
+  role                  UserRole  @default(user)
+  failedLoginAttempts   Int       @default(0)
+  lockoutUntil         DateTime?
+  resetPasswordToken    String?
+  resetPasswordExpires  DateTime?
+  sessions             Session[]
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  lastPasswordChange   DateTime?
+
+  @@map("users")
 }
 
+model Session {
+  id            String    @id @default(uuid())
+  userId        String
+  refreshToken  String
+  accessToken   String
+  isRevoked     Boolean   @default(false)
+  expiryReason  String?
+  metadata      SessionMetadata?
+  lastActiveAt  DateTime  @default(now())
+  createdAt     DateTime  @default(now())
+  expiresAt     DateTime
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@map("sessions")
+}
+
+model SessionMetadata {
+  id                String   @id @default(uuid())
+  sessionId         String   @unique
+  platform          String?
+  userAgent         String?
+  browser           String?
+  language          String?
+  ip                String?
+  deviceFingerprint String?
+  timezoneOffset    Int?
+  session           Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@map("session_metadata")
+}
+
+enum AccountStatus {
+  active
+  suspended
+  inactive
+
+  @@map("account_status")
+}
+
+enum UserRole {
+  user
+  admin
+
+  @@map("user_roles")
+}

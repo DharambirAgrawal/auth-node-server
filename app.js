@@ -11,8 +11,8 @@ const app = express();
 
 //connect DB
 import { PrismaClient } from "@prisma/client";
-export const prisma = new PrismaClient();
-
+const prisma = new PrismaClient();
+export {prisma}
 // const newUser = await prisma.user.create({
 //   data: { name:"Dharamfbir", email:"df@gmail.com" },
 // });
@@ -49,6 +49,13 @@ app.get('/api/resource', asyncHandler(async (req, res) => {
   }
   res.json(resource);
 }));
+
+
+//routes
+import { authRouter } from './src/routes/authRoutes.js';
+
+app.use("/api/auth", authRouter);
+
 
 // Handle 404 routes
 app.all('*', (req, res, next) => {

@@ -1,30 +1,35 @@
-import authService from "../services/authService.js";
-import { AuthenticationError, ValidationError } from "../errors/index.js";
-import { errorMessages } from "../errors/errorMessages.js";
-import logger from "../utils/logger.js";
+import {prisma} from "../../app.js"
+import asyncHandler from "express-async-handler";
 
-export const register = async (req, res, next) => {
+
+export const register =asyncHandler( async (req, res, next) => {
   try {
-    const { email, password, projectId } = req.body;
-
-    if (!email || !password) {
-      throw new ValidationError(errorMessages.MISSING_FIELDS);
-    }
-
-    const user = await authService.registerUser(email, password, projectId);
-    logger.info(`User registered: ${user._id}`);
-
-    res.status(201).json({
-      status: "success",
-      message: "User registered successfully",
-      data: { userId: user._id },
+    const newUser = await prisma.user.create({
+      data: {
+        name: 'John Doe',
+        email: 'john.doooe@example.com',
+        password: 'hashedpassword123', // Make sure to hash the password before saving it
+        // accountStatus: 'active',
+        // isEmailVerified: false,
+        // verificationToken: 'some-random-token',
+        // role: 'user',
+        // failedLoginAttempts: 0,
+        // createdAt: new Date(),
+        // updatedAt: new Date(),
+        // lastPasswordChange: new Date(),
+      },
     });
-  } catch (error) {
-    next(error);
-  }
-};
 
-export const login = async (req, res, next) => {
+    console.log('User created:', newUser);
+  } catch (error) {
+    console.error('Error creating user:', error);
+  } finally {
+    await prisma.$disconnect();
+  }
+  res.send("hlo")
+});
+
+export const login = asyncHandler(async (req, res, next) => {
   try {
     const { email, password, projectId } = req.body;
 
@@ -47,7 +52,7 @@ export const login = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-};
+});
 
 export const forgotPassword = async (req, res, next) => {
   try {
