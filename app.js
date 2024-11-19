@@ -10,8 +10,12 @@ import { logger } from "./src/utils/logger.js";
 const app = express();
 
 //connect DB
-import { testDbConnection } from "./src/config/database.js";
-testDbConnection();
+import { PrismaClient } from "@prisma/client";
+export const prisma = new PrismaClient();
+
+// const newUser = await prisma.user.create({
+//   data: { name:"Dharamfbir", email:"df@gmail.com" },
+// });
 
 // Middleware
 app.use(express.json());
