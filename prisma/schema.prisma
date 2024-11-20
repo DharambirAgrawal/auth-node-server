@@ -7,47 +7,46 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 model User {
-  id                    String    @id @default(uuid())
-  name                  String
-  email                 String    @unique
-  password              String    // Hashed password
-  accountStatus         AccountStatus @default(inactive)
-  isEmailVerified      Boolean   @default(false)
-  verificationToken     String?
-  role                  UserRole  @default(user)
-  failedLoginAttempts   Int       @default(0)
+  id                   String        @id @default(uuid())
+  name                 String
+  email                String        @unique
+  password             String
+  accountStatus        AccountStatus @default(inactive)
+  isEmailVerified      Boolean       @default(false)
+  verificationToken    String?
+  role                 UserRole      @default(user)
+  failedLoginAttempts  Int           @default(0)
   lockoutUntil         DateTime?
-  resetPasswordToken    String?
-  resetPasswordExpires  DateTime?
-  sessions             Session[]
-  createdAt            DateTime  @default(now())
-  updatedAt            DateTime  @updatedAt
+  resetPasswordToken   String?
+  resetPasswordExpires DateTime?
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
   lastPasswordChange   DateTime?
+  sessions             Session[]
 
   @@map("users")
 }
 
 model Session {
-  id            String    @id @default(uuid())
-  userId        String
-  refreshToken  String
-  accessToken   String
-  isRevoked     Boolean   @default(false)
-  expiryReason  String?
-  metadata      SessionMetadata?
-  lastActiveAt  DateTime  @default(now())
-  createdAt     DateTime  @default(now())
-  expiresAt     DateTime
-  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id           String           @id @default(uuid())
+  userId       String
+  refreshToken String
+  accessToken  String
+  isRevoked    Boolean          @default(false)
+  expiryReason String?
+  lastActiveAt DateTime         @default(now())
+  createdAt    DateTime         @default(now())
+  expiresAt    DateTime
+  metadata     SessionMetadata?
+  user         User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("sessions")
 }
 
 model SessionMetadata {
-  id                String   @id @default(uuid())
-  sessionId         String   @unique
+  id                String  @id @default(uuid())
+  sessionId         String  @unique
   platform          String?
   userAgent         String?
   browser           String?
@@ -55,7 +54,7 @@ model SessionMetadata {
   ip                String?
   deviceFingerprint String?
   timezoneOffset    Int?
-  session           Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  session           Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 
   @@map("session_metadata")
 }
