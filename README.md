@@ -28,6 +28,23 @@ A reusable authentication server with multi-tenancy support.
 
 3. Create a `.env` file in the root directory and add your environment variables (see `.env.example` for required variables).
 
+```
+
+NODE_ENV="development" | "production" #either production or development
+
+DATABASE_URL="p" # Neon DB url
+
+# npx prisma generate
+#  npx prisma db push
+
+VERIFY_EMAIL_SECRET="" #secret for email verification email token
+
+
+EMAIL_USER="" # the email to use to send emails
+EMAIL_PASSWORD="" # above email app password  
+```
+
+
 4. Start the server:
    ```
    npm start
