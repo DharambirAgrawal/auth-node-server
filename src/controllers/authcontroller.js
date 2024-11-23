@@ -15,7 +15,16 @@ export const register =asyncHandler( async (req, res,next) => {
   if (!validateEmail(email)){
     throw new AppError('Invalid Email!', 400);
   }
- 
+  
+  const existingUser = await prisma.user.findUnique({
+    where: { email: email}, // Use your unique field here, such as email
+  });
+
+  if (existingUser) {
+    throw new AppError('User already Exists', 400);
+  }
+
+
     const newUser = await prisma.user.create({
       data: {
         name: name,
@@ -23,9 +32,13 @@ export const register =asyncHandler( async (req, res,next) => {
         password: password, // Make sure to hash the password before saving it
       },
     });
-    console.log(newUser)
+    
+
+
   
-  res.send("hlo")
+  res.status(200).json({
+    message:"success"
+  })
 });
 
 export const login = asyncHandler(async (req, res, next) => {

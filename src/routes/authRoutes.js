@@ -8,5 +8,6 @@ const AuthRouter = express.Router();
 
 
 export const authRouter = AuthRouter
-.post("/register/:token",registerMiddleware, register)
+.post("/register", register)
+.get("/register/:token", registerMiddleware, register);
 
