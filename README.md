@@ -56,11 +56,11 @@ A reusable authentication server with multi-tenancy support.
    npm start
    ```
 
-For development, use:
+5. For development, use:
 
-      ```
-      npm run dev
-      ```
+   ```
+   npm run dev
+   ```
 
 ## Usage
 
