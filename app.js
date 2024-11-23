@@ -12,10 +12,7 @@ const app = express();
 //connect DB
 import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
-export {prisma}
-// const newUser = await prisma.user.create({
-//   data: { name:"Dharamfbir", email:"df@gmail.com" },
-// });
+
 
 // Middleware
 app.use(express.json());

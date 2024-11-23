@@ -12,7 +12,7 @@ model User {
   name                 String
   email                String        @unique
   password             String
-  accountStatus        AccountStatus @default(inactive)
+  accountStatus        AccountStatus @default(pending)
   isEmailVerified      Boolean       @default(false)
   verificationToken    String?
   role                 UserRole      @default(user)
@@ -63,6 +63,7 @@ enum AccountStatus {
   active
   suspended
   inactive
+  pending
 
   @@map("account_status")
 }

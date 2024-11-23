@@ -1,39 +1,30 @@
-import {prisma} from "../../app.js"
+// import {prisma} from "../../app.js"
+
 import asyncHandler from "express-async-handler";
 import { AppError } from "../errors/AppError.js";
-import { PrismaErrorHandler} from "../errors/prismaErrorHandler.js"
-
+import {prisma} from "../middlewares/prismaMiddleware.js"
+import { validateEmail } from "../utils/utils.js";
 export const register =asyncHandler( async (req, res,next) => {
   const {name,email,password}=req.body
+  
 
   if(!name || !email || !password){
     throw new AppError('Resource not found', 400);
   }
-  // try{
 
-    
+  if (!validateEmail(email)){
+    throw new AppError('Invalid Email!', 400);
+  }
+ 
     const newUser = await prisma.user.create({
       data: {
-        name: 'John Doe',
-        email: 'jodoooe@example.com',
-        password: 'hashedpassword123', // Make sure to hash the password before saving it
+        name: name,
+        email: email,
+        password: password, // Make sure to hash the password before saving it
       },
     });
     console.log(newUser)
-  // }catch(err){
-  //  return next(PrismaErrorHandler.handle(err));
-  // }
-    
-    // accountStatus: 'active',
-    // isEmailVerified: false,
-    // verificationToken: 'some-random-token',
-    // role: 'user',
-    // failedLoginAttempts: 0,
-    // createdAt: new Date(),
-    // updatedAt: new Date(),
-    // lastPasswordChange: new Date(),
-    // console.log('User created:', newUser);
- 
+  
   res.send("hlo")
 });
 
