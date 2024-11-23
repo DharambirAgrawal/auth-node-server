@@ -4,7 +4,10 @@ import asyncHandler from "express-async-handler";
 import { AppError } from "../errors/AppError.js";
 import {prisma} from "../middlewares/prismaMiddleware.js"
 import { validateEmail } from "../utils/utils.js";
+
+
 export const register =asyncHandler( async (req, res,next) => {
+
   const {name,email,password}=req.body
   
 
@@ -12,10 +15,12 @@ export const register =asyncHandler( async (req, res,next) => {
     throw new AppError('Resource not found', 400);
   }
 
+  //validating email
   if (!validateEmail(email)){
     throw new AppError('Invalid Email!', 400);
   }
   
+  //Checking if user exists
   const existingUser = await prisma.user.findUnique({
     where: { email: email}, // Use your unique field here, such as email
   });
@@ -24,7 +29,7 @@ export const register =asyncHandler( async (req, res,next) => {
     throw new AppError('User already Exists', 400);
   }
 
-
+    //Creating new user
     const newUser = await prisma.user.create({
       data: {
         name: name,
@@ -40,6 +45,9 @@ export const register =asyncHandler( async (req, res,next) => {
     message:"success"
   })
 });
+
+
+
 
 export const login = asyncHandler(async (req, res, next) => {
   try {

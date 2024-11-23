@@ -12,14 +12,14 @@ export async function hashData(data){
 }
 
 
-
-/**
+ /**
  * Compare a plain password with a hashed password.
  * @param {string} plainPassword - The plain password entered by the user.
  * @param {string} hashedPassword - The hashed password stored in the database.
  * @returns {Promise<boolean>} - Returns true if passwords match, false otherwise.
  */
 export async function comparePasswords(plainPassword, hashedPassword) {
+ 
   try {
     // Compare the plain password with the hashed password
     const isMatch = await bcrypt.compare(plainPassword, hashedPassword);

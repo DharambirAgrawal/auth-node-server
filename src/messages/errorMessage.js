@@ -13,4 +13,3 @@ export const errors = {
     SERVICE_UNAVAILABLE: { code: 503, message: "The service is currently unavailable. Please try again later." },
     GATEWAY_TIMEOUT: { code: 504, message: "The server did not respond in time. Please try again later." },
   };
-  

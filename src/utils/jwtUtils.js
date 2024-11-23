@@ -1,16 +1,16 @@
 import jwt from "jsonwebtoken"
 import { AppError } from "../errors/AppError.js";
-/**
+
+    /**
  * Generates a JWT token with an email and expiration time.
  * 
- * @param {string} email - The email to embed in the token.
+ * @param {object} payload - The payload to embed in the token.
  * @param {string} secretKey - The secret key for encoding the token.
  * @param {number} expiresInMinutes - The token's expiration time in minutes.
  * @returns {string} - A JWT token as a string.
  */
 export function generateToken(payload,secret, expiresInMinutes = 5) {
-    // Define payload with the email
-    // const payload = { email };
+
 
     // Define expiration time
     const options = { expiresIn: `${expiresInMinutes}m` };

@@ -2,8 +2,10 @@
 import dotenv from "dotenv";
 dotenv.config();
 import express from "express";
-import { errorHandler, AppError, asyncHandler } from './src/errors/index.js';
+import { errorHandler, AppError } from './src/errors/index.js';
 import { logger } from "./src/utils/logger.js";
+import asyncHandler from "express-async-handler";
+
 
 // Load environment variables
 
