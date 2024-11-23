@@ -45,7 +45,7 @@ A reusable authentication server with multi-tenancy support.
 
 4. use prisma command as:
 
-```
+   ```
    npx prisma generate
    npx prisma db push
    ```
@@ -58,9 +58,9 @@ A reusable authentication server with multi-tenancy support.
 
 For development, use:
 
-   ```
-   npm run dev
-   ```
+      ```
+      npm run dev
+      ```
 
 ## Usage
 
