@@ -1,3 +1,5 @@
+
+
 export const VERIFY_EMAIL_MESSAGE = (token) => {
   return {
     subject: '🎉 One quick step to get started!',
