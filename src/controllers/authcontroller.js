@@ -7,6 +7,7 @@ import { validateEmail } from "../utils/utils.js";
 import { decodeToken, generateToken } from "../utils/jwtUtils.js"
 import { sendEmail } from "../services/emailService.js";
 import { VERIFY_EMAIL_MESSAGE } from "../messages/emailMessage.js";
+import { comparePasswords } from "../utils/utils.js";
 
 //register ---->
 export const register = asyncHandler(async (req, res) => {
@@ -118,38 +119,43 @@ export const resendEmail = asyncHandler(async (req, res) => {
   }
 
   res.status(200).json({
-    message:"success"
+    message: "success"
   })
 
 })
 
-
 // <-------- end of register 
 
 
-export const login = asyncHandler(async (req, res, next) => {
-  try {
-    const { email, password, projectId } = req.body;
+export const login = asyncHandler(async (req, res) => {
 
-    if (!email || !password) {
-      throw new ValidationError(errorMessages.MISSING_FIELDS);
-    }
-
-    const { token, user } = await authService.loginUser(
-      email,
-      password,
-      projectId
-    );
-    logger.info(`User logged in: ${user._id}`);
-
-    res.json({
-      status: "success",
-      message: "Login successful",
-      data: { token, userId: user._id, role: user.role },
-    });
-  } catch (error) {
-    next(error);
+  const { email, password, metaData } = req.body;
+  
+  if (!email || !password) {
+    throw new AppError('Resource not found', 400);
   }
+
+  //validating email
+  if (!validateEmail(email)) {
+    throw new AppError('Invalid Email!', 400);
+  }
+
+  //finding user
+  const User = await prisma.user.findUnique({
+    where: { email: email }, // Use your unique field here, such as email
+  });
+
+  if (!User) {
+    throw new AppError('User not found', 500);
+  }
+  console.log(User)
+
+  res.json({
+    status: "success",
+    message: "Login successful",
+    // data: { token, userId: user._id, role: user.role },
+  });
+
 });
 
 export const forgotPassword = async (req, res, next) => {
