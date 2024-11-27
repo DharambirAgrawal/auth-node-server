@@ -1,6 +1,7 @@
 import { PrismaErrorHandler } from "./prismaErrorHandler.js";
 
 export const errorHandler = (err, req, res, next) => {
+  console.log(err)
   const processedError = PrismaErrorHandler.handle(err);
 
   processedError.statusCode = processedError.statusCode || 500;

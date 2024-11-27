@@ -1,22 +1,22 @@
 import jwt from "jsonwebtoken"
 import { AppError } from "../errors/AppError.js";
 
-    /**
- * Generates a JWT token with an email and expiration time.
- * 
- * @param {object} payload - The payload to embed in the token.
- * @param {string} secretKey - The secret key for encoding the token.
- * @param {number} expiresInMinutes - The token's expiration time in minutes.
- * @returns {string} - A JWT token as a string.
- */
-export function generateToken(payload,secret, expiresInMinutes = 5) {
+/**
+* Generates a JWT token with an email and expiration time.
+* 
+* @param {object} payload - The payload to embed in the token.
+* @param {string} secretKey - The secret key for encoding the token.
+* @param {number} expiresInMinutes - The token's expiration time in minutes.
+* @returns {string} - A JWT token as a string.
+*/
+export function generateToken(payload, secret, expiresInMinutes = 5) {
 
 
     // Define expiration time
     const options = { expiresIn: `${expiresInMinutes}m` };
 
     // Generate and return the token
-    return jwt.sign(payload,secret, options);
+    return jwt.sign(payload, secret, options);
 }
 
 
@@ -28,7 +28,7 @@ export function generateToken(payload,secret, expiresInMinutes = 5) {
  * @param {string} secretKey - The secret key used to sign the token.
  * @returns {object|string} - The decoded payload or an error message.
  */
-export function decodeToken(token,secret) {
+export function decodeToken(token, secret) {
     try {
         const payload = jwt.verify(token, secret);
         return payload; // Includes 'email' and other data
@@ -42,5 +42,16 @@ export function decodeToken(token,secret) {
         }
     }
 }
+
+export function generateUniqueId() {
+    return 'id-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+}
+
+
+
+
+
+
+
 
 

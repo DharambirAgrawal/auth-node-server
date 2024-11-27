@@ -4,7 +4,7 @@ import asyncHandler from "express-async-handler";
 import { AppError } from "../errors/AppError.js";
 import { prisma } from "../middlewares/prismaMiddleware.js"
 import { validateEmail } from "../utils/utils.js";
-import { decodeToken, generateToken } from "../utils/jwtUtils.js"
+import { decodeToken, generateToken, generateUniqueId } from "../utils/jwtUtils.js"
 import { sendEmail } from "../services/emailService.js";
 import { VERIFY_EMAIL_MESSAGE } from "../messages/emailMessage.js";
 import { comparePasswords } from "../utils/utils.js";
@@ -130,7 +130,20 @@ export const resendEmail = asyncHandler(async (req, res) => {
 export const login = asyncHandler(async (req, res) => {
 
   const { email, password, metaData } = req.body;
-  
+  const {
+    platform,
+    userAgent,
+    browser,
+    language,
+    ip,
+    deviceFingerprint,
+    timezoneOffset
+  } = metaData
+
+  if (!platform || !userAgent || !browser) {
+    throw new AppError('Resource not found', 400);
+  }
+
   if (!email || !password) {
     throw new AppError('Resource not found', 400);
   }
@@ -148,12 +161,89 @@ export const login = asyncHandler(async (req, res) => {
   if (!User) {
     throw new AppError('User not found', 500);
   }
+
+  // Check accountStatus & Check lockoutUntil
   console.log(User)
+
+  if (User.accountStatus == "inactive" || User.accountStatus == "suspended") {
+    // TODO: Reset password 
+  }
+  if (User.accountStatus == "pending") {
+    // TODO: Resend Email to verify email (resend)
+  }
+
+  //TODO: check lockoutUntil time 
+
+  //
+
+
+  //Compare password
+  if (!comparePasswords(password, User.password)) {
+    //TODO: password incorrect
+  }
+
+  // Create unique sessionId refreshToken, accessToken from email and sessionId
+  const sessionId = generateUniqueId()
+  const payload = {
+    sessionId: sessionId,
+    email: email
+  }
+  const refreshToken = generateToken(payload, process.env.TOKEN_SECRET, 10080) // 7 day
+  const accessToken = generateToken(payload, process.env.TOKEN_SECRET, 1440) // 1 day
+ 
+
+
+  const updatedUser = await prisma.user.update({
+    where: { email: email },
+    data: {
+      lockoutUntil: null,
+      failedLoginAttempts: 0,
+      sessions: {
+        create: [
+          {
+            sessionId: sessionId,
+            refreshToken: refreshToken,
+            accessToken: accessToken,
+            expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
+            metadata:{
+              create:{
+                platform: platform,
+                userAgent: userAgent,
+                browser: browser,
+                language: language,
+                ip: ip,
+                deviceFingerprint: deviceFingerprint,
+                timezoneOffset: parseInt( timezoneOffset)
+              }
+            }
+          }
+        ]
+      }
+    },
+  });
+
+  console.log(updatedUser)
+  // const userMetadata = prisma.session.create(
+  //   {
+  //     data: {
+  //       sessionId: generateSessionId(platform, userAgent, browser),
+  //       platform: platform,
+  //       userAgent: userAgent,
+  //       browser: browser,
+  //       language: language,
+  //       ip: ip,
+  //       deviceFingerprint: deviceFingerprint,
+  //       timezoneOffset: timezoneOffset
+  //     },
+  //   }
+  // )
+
+
 
   res.json({
     status: "success",
     message: "Login successful",
-    // data: { token, userId: user._id, role: user.role },
+    
   });
 
 });
@@ -200,7 +290,7 @@ export const resetPassword = async (req, res, next) => {
 
 export const getProfile = async (req, res, next) => {
   try {
-    const { userId, projectId } = req.user;
+    const { sessionId, projectId } = req.user;
     const user = await authService.getUserProfile(userId, projectId);
 
     res.json({
