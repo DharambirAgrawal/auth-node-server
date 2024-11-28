@@ -21,6 +21,19 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(logger)
 
+
+//for static files
+import path from 'path';
+import { fileURLToPath } from 'url';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+app.set('view engine', 'ejs'); // Set EJS as the template engine
+app.set('views', path.join(__dirname, '/public/view')); // Folder for EJS files
+app.use(express.static(path.join(__dirname, 'public')));
+
+
+
+
 // Security Headers (Optional but recommended)
 app.use((req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -54,6 +67,7 @@ app.get('/api/resource', asyncHandler(async (req, res) => {
 import { authRouter } from './src/routes/authRoutes.js';
 
 app.use("/api/auth", authRouter);
+
 
 
 // Handle 404 routes

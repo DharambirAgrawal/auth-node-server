@@ -1,5 +1,3 @@
-// import {prisma} from "../../app.js"
-
 import asyncHandler from "express-async-handler";
 import { AppError } from "../errors/AppError.js";
 import { prisma } from "../middlewares/prismaMiddleware.js"
@@ -8,7 +6,6 @@ import { decodeToken, generateToken, generateUniqueId } from "../utils/jwtUtils.
 import { sendEmail } from "../services/emailService.js";
 import { VERIFY_EMAIL_MESSAGE } from "../messages/emailMessage.js";
 import { comparePasswords } from "../utils/utils.js";
-
 //register ---->
 export const register = asyncHandler(async (req, res) => {
 
@@ -126,7 +123,7 @@ export const resendEmail = asyncHandler(async (req, res) => {
 
 // <-------- end of register 
 
-
+//login ---->
 export const login = asyncHandler(async (req, res) => {
 
   const { email, password, metaData } = req.body;
@@ -310,6 +307,10 @@ if(User.lockoutUntil.getTime()>Date.now()){
 
 });
 
+// <-------- end of login 
+
+
+
 export const forgotPassword = async (req, res, next) => {
   try {
     const { email, projectId } = req.body;
@@ -330,25 +331,21 @@ export const forgotPassword = async (req, res, next) => {
   }
 };
 
-export const resetPassword = async (req, res, next) => {
-  try {
-    const { token, newPassword, projectId } = req.body;
+export const resetPassword =asyncHandler( async (req, res, next) => {
+  const token = '12mf dmf gmdf'
 
-    if (!token || !newPassword) {
-      throw new ValidationError(errorMessages.MISSING_FIELDS);
-    }
+  res.render('resetpassword', { token, env: process.env.PUBLIC_URL });
+});
 
-    await authService.resetPassword(token, newPassword, projectId);
-    logger.info("Password reset successful");
 
-    res.json({
-      status: "success",
-      message: "Password reset successful",
-    });
-  } catch (error) {
-    next(error);
-  }
-};
+
+
+
+
+
+
+
+
 
 export const getProfile = async (req, res, next) => {
   try {
