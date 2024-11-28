@@ -163,23 +163,95 @@ export const login = asyncHandler(async (req, res) => {
   }
 
   // Check accountStatus & Check lockoutUntil
-  console.log(User)
+  
 
   if (User.accountStatus == "inactive" || User.accountStatus == "suspended") {
-    // TODO: Reset password 
+    // TODO: Reset password email
+    return res.status(401).json({
+      status: "failed",
+      message:"Reset password!"
+    });
   }
+
   if (User.accountStatus == "pending") {
     // TODO: Resend Email to verify email (resend)
+    const payload = {
+      email: email
+    }
+    const token = generateToken(payload, process.env.VERIFY_EMAIL_SECRET)
+  
+     await prisma.user.update({
+      where: {
+        email: email,
+      },
+      data: {
+        verificationToken: token
+      },
+    })
+  
+    await sendEmail(email, VERIFY_EMAIL_MESSAGE(token))
+
+    return res.status(401).json({
+      status: "failed",
+      message:"Verify your email!"
+    });
+  
   }
 
-  //TODO: check lockoutUntil time 
+  //check lockoutUntil time 
 
-  //
+if(User.lockoutUntil.getTime()>Date.now()){
+  return res.status(403).json({
+    status: "failed",
+    message:"Try again in 15 Minutes"
+  });
+}
+
 
 
   //Compare password
-  if (!comparePasswords(password, User.password)) {
-    //TODO: password incorrect
+  const iscorrect=await comparePasswords(password, User.password)
+
+  if (!iscorrect) {
+
+    if (User.failedLoginAttempts < 10) { 
+      await prisma.user.update({
+        where: {
+          email: email,
+        },
+        data: {
+          failedLoginAttempts: User.failedLoginAttempts+1
+        },
+      })
+
+    } else if (User.failedLoginAttempts > 20) {
+      await prisma.user.update({
+        where: {
+          email: email,
+        },
+        data: {
+          failedLoginAttempts: User.failedLoginAttempts+1,
+          accountStatus:"suspended",
+          lockoutUntil:new Date(Date.now() + 15 * 60 * 1000), // 15 minutes from now
+        },
+      })
+
+    } else { // for greater then 10 and less than 200
+      await prisma.user.update({
+        where: {
+          email: email,
+        },
+        data: {
+          failedLoginAttempts: User.failedLoginAttempts+1,
+          lockoutUntil:new Date(Date.now() + 15 * 60 * 1000), // 15 minutes from now
+        },
+      })
+    }
+
+    return res.status(400).json({
+      status: "failed",
+      message:"Incorrect password!"
+    });
   }
 
   // Create unique sessionId refreshToken, accessToken from email and sessionId
@@ -190,7 +262,7 @@ export const login = asyncHandler(async (req, res) => {
   }
   const refreshToken = generateToken(payload, process.env.TOKEN_SECRET, 10080) // 7 day
   const accessToken = generateToken(payload, process.env.TOKEN_SECRET, 1440) // 1 day
- 
+
 
 
   const updatedUser = await prisma.user.update({
@@ -205,15 +277,15 @@ export const login = asyncHandler(async (req, res) => {
             refreshToken: refreshToken,
             accessToken: accessToken,
             expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
-            metadata:{
-              create:{
+            metadata: {
+              create: {
                 platform: platform,
                 userAgent: userAgent,
                 browser: browser,
                 language: language,
                 ip: ip,
                 deviceFingerprint: deviceFingerprint,
-                timezoneOffset: parseInt( timezoneOffset)
+                timezoneOffset: parseInt(timezoneOffset)
               }
             }
           }
@@ -222,28 +294,18 @@ export const login = asyncHandler(async (req, res) => {
     },
   });
 
-  console.log(updatedUser)
-  // const userMetadata = prisma.session.create(
-  //   {
-  //     data: {
-  //       sessionId: generateSessionId(platform, userAgent, browser),
-  //       platform: platform,
-  //       userAgent: userAgent,
-  //       browser: browser,
-  //       language: language,
-  //       ip: ip,
-  //       deviceFingerprint: deviceFingerprint,
-  //       timezoneOffset: timezoneOffset
-  //     },
-  //   }
-  // )
+  if(!updatedUser){
+    throw new AppError('Failed to update user', 500);
+  }
 
+  // console.log(updatedUser)
 
+  //sending token in authorization token
+  res.setHeader('Authorization', `Bearer ${refreshToken},Bearer ${accessToken}`);
 
-  res.json({
+  res.status(200).json({
+    sessionId: sessionId,
     status: "success",
-    message: "Login successful",
-    
   });
 
 });
