@@ -34,33 +34,19 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 
 
-// Security Headers (Optional but recommended)
-app.use((req, res, next) => {
-  res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.setHeader('X-Frame-Options', 'deny');
-  res.setHeader('X-XSS-Protection', '1; mode=block');
-  next();
-});
+// // Security Headers (Optional but recommended)
+// app.use((req, res, next) => {
+//   res.setHeader('X-Content-Type-Options', 'nosniff');
+//   res.setHeader('X-Frame-Options', 'deny');
+//   res.setHeader('X-XSS-Protection', '1; mode=block');
+//   next();
+// });
 
 // Routes
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'success', message: 'Server is healthy' });
 });
 
-// Example route with error handling
-import { ValidationError,DatabaseError } from "./src/errors/index.js";
-app.get('/api/resource', asyncHandler(async (req, res) => {
-  const resource = undefined
-  throw new DatabaseError('Failed to create user');
-  // throw new ValidationError([
-  //   { field: 'email', message: 'Email is required' },
-  //   { field: 'password', message: 'Password is required' }
-  // ]);
-  if (!resource) {
-    throw new AppError('Resource not found', 404);
-  }
-  res.json(resource);
-}));
 
 
 //routes
