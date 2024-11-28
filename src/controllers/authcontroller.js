@@ -174,7 +174,7 @@ export const login = asyncHandler(async (req, res) => {
   }
 
   if (User.accountStatus == "pending") {
-    // TODO: Resend Email to verify email (resend)
+   // Resend Email to verify email (resend)
     const payload = {
       email: email
     }
