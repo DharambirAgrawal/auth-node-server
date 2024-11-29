@@ -4,9 +4,10 @@ import { prisma } from "../middlewares/prismaMiddleware.js"
 import { validateEmail } from "../utils/utils.js";
 import { decodeToken, generateToken, generateUniqueId } from "../utils/jwtUtils.js"
 import { sendEmail } from "../services/emailService.js";
-import { VERIFY_EMAIL_MESSAGE } from "../messages/emailMessage.js";
+import { VERIFY_EMAIL_MESSAGE,FORGET_PASSWORD_MESSAGE,PASSWORD_CHANGE_SUCCESSFUL_MESSAGE } from "../messages/emailMessage.js";
 import { comparePasswords } from "../utils/utils.js";
 import { validatePassword } from "../utils/utils.js";
+import { hashData } from "../utils/utils.js";
 //register ---->
 export const register = asyncHandler(async (req, res) => {
 
@@ -79,10 +80,8 @@ export const verifyEmail = asyncHandler(async (req, res) => {
     throw new AppError('Server Error Try again!', 500);
   }
 
-// TODO: send the success html and to close the window as well
-  res.status(200).json({
-    message: "success"
-  })
+// send the success html and to close the window as well
+res.render('success',{ message:"success!!"});
 })
 
 export const resendEmail = asyncHandler(async (req, res) => {
@@ -201,13 +200,15 @@ export const login = asyncHandler(async (req, res) => {
 
   //check lockoutUntil time 
 
-if(User.lockoutUntil.getTime()>Date.now()){
-  return res.status(403).json({
-    status: "failed",
-    message:"Try again in 15 Minutes"
-  });
+if(User.lockoutUntil){
+  if(User.lockoutUntil.getTime()>Date.now()){
+    return res.status(403).json({
+      status: "failed",
+      message:"Try again in 15 Minutes"
+    });
+  }
 }
-
+  
 
 
   //Compare password
@@ -315,30 +316,76 @@ if(User.lockoutUntil.getTime()>Date.now()){
 
 
 //Reset password ---->
-export const forgotPassword = async (req, res, next) => {
-  try {
-    const { email, projectId } = req.body;
+export const forgotPassword =asyncHandler(async (req, res, next) => {
+
+    const { email } = req.body;
 
     if (!email) {
-      throw new ValidationError(errorMessages.EMAIL_REQUIRED);
+      throw new AppError('Resource not found', 400);
     }
 
-    await authService.forgotPassword(email, projectId);
-    logger.info(`Password reset requested for: ${email}`);
+    if(!validateEmail(email)){
+      throw new AppError('Invalid Email!', 400);
+    }
+
+    const payload={
+      type:"resetPassword",
+      email:email
+    }
+    const token=generateToken(payload,process.env.FORGETPASSWORD_SECRET,10)
+  const updatedUser = await prisma.user.update({
+    where: { email: email },
+    data: {
+      resetPasswordToken:token,
+      resetPasswordExpires:new Date(Date.now() + 10 * 60 * 1000)
+    },
+  });
+  
+
+  if(!updatedUser){
+      throw new AppError('User not found!', 404);
+    }
+
+    const link=`${process.env.PUBLIC_URL}/api/auth/resetpassword/${token}`
+
+    await sendEmail(email, FORGET_PASSWORD_MESSAGE(link,updatedUser.name))
 
     res.json({
       status: "success",
       message: "Password reset email sent",
     });
-  } catch (error) {
-    next(error);
+ 
+});
+
+export const resetPasswordUi=asyncHandler(async(req,res,next)=>{
+  const {token} =req.params
+  if(!token){
+    return next()
   }
-};
+  const {email,type}=decodeToken(token,process.env.FORGETPASSWORD_SECRET)
+  if(type !="resetPassword" || ! validateEmail(email)){
+    return next()
+  }
 
-export const resetPasswordUi=asyncHandler(async(req,res)=>{
-  const token = '12mfdmfflnekrjtnergmdf'
+  const payload={
+    type:"resetPassword",
+    email:email
+  }
+  const forget_token=generateToken(payload,process.env.FORGETPASSWORD_SECRET,10)
 
-  res.render('resetpassword', { token, env: process.env.PUBLIC_URL });
+  const updatedUser = await prisma.user.update({
+    where: { email: email, resetPasswordToken:token },
+    data: {
+     resetPasswordToken:forget_token,
+     resetPasswordExpires:new Date(Date.now() + 10 * 60 * 1000)
+    },
+  });
+
+  if(!updatedUser){
+    return next()
+  }
+
+  res.render('resetpassword', { token:forget_token, env: process.env.PUBLIC_URL });
 })
 
 export const resetPassword =asyncHandler( async (req, res, next) => {
@@ -347,11 +394,60 @@ export const resetPassword =asyncHandler( async (req, res, next) => {
   const {password,allLogout}=req.body
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
-  console.log(token)
-  console.log(req.body)
-  console.log(password,allLogout)
+
+  if(!token || !password){
+    throw new AppError('Resource not found', 400);
+  }
+
+  const {email,type}=decodeToken(token,process.env.FORGETPASSWORD_SECRET)
+
+  if(type !="resetPassword" || ! validateEmail(email)){
+    throw new AppError('Invalid token or email', 500);
+  }
+
+    //Checking if user exists
+    const existingUser = await prisma.user.findUnique({
+      where: { email: email, resetPasswordToken:token}, // Use your unique field here, such as email
+    });
+
+    if(!existingUser){
+      throw new AppError('User not found', 500);
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { email: email, resetPasswordToken:token },
+      data: {
+       resetPasswordToken:null,
+       lastPasswordChange:new Date(),
+       updatedAt:new Date(),
+       resetPasswordExpires:null,
+       password:await hashData(password) 
+      },
+    });
+
+    if(!updatedUser){
+      return next()
+    }
+    if(allLogout){
+      await prisma.session.deleteMany({
+        where: {
+            userId: updatedUser.id, // Use the updated user's ID
+        },
+    });
+    }
+ 
+    const payload={
+      type:"suspended",
+      email:email
+    }
+    const suspendToken=generateToken(payload,process.env.FORGETPASSWORD_SECRET,5)
+
+    const link=`${process.env.PUBLIC_URL}/api/auth/suspend/user/${suspendToken}`
+
+    await sendEmail(email, PASSWORD_CHANGE_SUCCESSFUL_MESSAGE(link,updatedUser.name))
+
   res.status(200).json({
-    sttatus:"success"
+    status:"success"
   })
 });
 // <-------- end of reset password 

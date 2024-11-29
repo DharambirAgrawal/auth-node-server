@@ -5,6 +5,7 @@ export class PrismaErrorHandler {
   static handle(error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       // Handle known Prisma errors
+
       switch (error.code) {
         case 'P2002':
           // For unique constraint violations, provide more specific error messages
@@ -35,9 +36,9 @@ export class PrismaErrorHandler {
           });
 
         case 'P2025':
-          return new DatabaseError('Record not found', {
+          return new DatabaseError('User not found', {
             type: 'not_found'
-          });
+          },404);
 
         default:
           return new DatabaseError(`Database error: ${error.message}`);

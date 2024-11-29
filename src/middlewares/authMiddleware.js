@@ -19,9 +19,9 @@ export const loginMiddleware = asyncHandler(async (req, res, next) => {
 
   // checking type
   // if it is not refresh token
-  // if (type != "refresh" || metaData.sessionId != sessionId) {
-  //   return next()
-  // }
+  if (type != "refresh" || metaData.sessionId != sessionId) {
+    return next()
+  }
 
   //check if session and user exists
   const user = await prisma.user.findUnique({
