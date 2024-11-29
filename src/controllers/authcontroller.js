@@ -450,75 +450,9 @@ export const resetPassword =asyncHandler( async (req, res, next) => {
     status:"success"
   })
 });
+
+export const suspendAccount=asyncHandler(async (req,res,next)=>{})
 // <-------- end of reset password 
 
 
 
-
-
-
-
-
-
-
-
-export const getProfile = async (req, res, next) => {
-  try {
-    const { sessionId, projectId } = req.user;
-    const user = await authService.getUserProfile(userId, projectId);
-
-    res.json({
-      status: "success",
-      data: { user },
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const updateProfile = async (req, res, next) => {
-  try {
-    const { userId, projectId } = req.user;
-    const updates = req.body;
-
-    const updatedUser = await authService.updateUserProfile(
-      userId,
-      projectId,
-      updates
-    );
-
-    res.json({
-      status: "success",
-      message: "Profile updated successfully",
-      data: { user: updatedUser },
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const changePassword = async (req, res, next) => {
-  try {
-    const { userId, projectId } = req.user;
-    const { currentPassword, newPassword } = req.body;
-
-    if (!currentPassword || !newPassword) {
-      throw new ValidationError(errorMessages.MISSING_FIELDS);
-    }
-
-    await authService.changePassword(
-      userId,
-      projectId,
-      currentPassword,
-      newPassword
-    );
-    logger.info(`Password changed for user: ${userId}`);
-
-    res.json({
-      status: "success",
-      message: "Password changed successfully",
-    });
-  } catch (error) {
-    next(error);
-  }
-};
