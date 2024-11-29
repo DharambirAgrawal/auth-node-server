@@ -79,7 +79,7 @@ export const verifyEmail = asyncHandler(async (req, res) => {
     throw new AppError('Server Error Try again!', 500);
   }
 
-
+// TODO: send the success html and to close the window as well
   res.status(200).json({
     message: "success"
   })
