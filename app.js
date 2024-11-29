@@ -49,7 +49,7 @@ app.use("/api/auth", authRouter);
 
 //Handling succcess page
 app.use("/api/success",(req,res)=>{
-  res.render('success');
+  res.render('success',{ message:"success!!"});
 })
 
 // Handle 404 routes
