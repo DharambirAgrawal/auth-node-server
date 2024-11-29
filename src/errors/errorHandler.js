@@ -25,17 +25,26 @@ export const errorHandler = (err, req, res, next) => {
       error: err,
       message: err.message,
       metadata: err.metadata,
-      stack: err.stack
+      stack: err.stack,
+      ...(err.metadata && { metadata: err.metadata })
     });
   };
 
   const handleProductionError = (err) => {
     // Operational, trusted error: send message to client
     if (err.isOperational) {
+
+      if(err.statusCode==500){
+        return res.status(err.statusCode).json({
+          status: 'error',
+          message: 'Something went wrong!',
+        });
+      }
+
       return res.status(err.statusCode).json({
         status: err.status,
         message: err.message,
-        ...(err.metadata && { metadata: err.metadata })
+       
       });
     }
 

@@ -1,22 +1,22 @@
 // src/server.js
 import dotenv from "dotenv";
+import cors from 'cors'
 dotenv.config();
 import express from "express";
 import { errorHandler, AppError } from './src/errors/index.js';
 import { logger } from "./src/utils/logger.js";
-import asyncHandler from "express-async-handler";
-
 
 // Load environment variables
 
 const app = express();
 
 //connect DB
-import { PrismaClient } from "@prisma/client";
-const prisma = new PrismaClient();
+// import { PrismaClient } from "@prisma/client";
+// const prisma = new PrismaClient();
 
 
 // Middleware
+app.use(cors())
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(logger)
@@ -33,15 +33,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 
 
-
-// // Security Headers (Optional but recommended)
-// app.use((req, res, next) => {
-//   res.setHeader('X-Content-Type-Options', 'nosniff');
-//   res.setHeader('X-Frame-Options', 'deny');
-//   res.setHeader('X-XSS-Protection', '1; mode=block');
-//   next();
-// });
-
 // Routes
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'success', message: 'Server is healthy' });
@@ -55,6 +46,11 @@ import { authRouter } from './src/routes/authRoutes.js';
 app.use("/api/auth", authRouter);
 
 
+
+//Handling succcess page
+app.use("/api/success",(req,res)=>{
+  res.render('success');
+})
 
 // Handle 404 routes
 app.all('*', (req, res, next) => {

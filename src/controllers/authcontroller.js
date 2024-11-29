@@ -6,6 +6,7 @@ import { decodeToken, generateToken, generateUniqueId } from "../utils/jwtUtils.
 import { sendEmail } from "../services/emailService.js";
 import { VERIFY_EMAIL_MESSAGE } from "../messages/emailMessage.js";
 import { comparePasswords } from "../utils/utils.js";
+import { validatePassword } from "../utils/utils.js";
 //register ---->
 export const register = asyncHandler(async (req, res) => {
 
@@ -19,6 +20,9 @@ export const register = asyncHandler(async (req, res) => {
   //validating email
   if (!validateEmail(email)) {
     throw new AppError('Invalid Email!', 400);
+  }
+  if (!validatePassword(password)) {
+    throw new AppError('Invalid Password!', 400);
   }
 
   //Checking if user exists
@@ -310,7 +314,7 @@ if(User.lockoutUntil.getTime()>Date.now()){
 // <-------- end of login 
 
 
-
+//Reset password ---->
 export const forgotPassword = async (req, res, next) => {
   try {
     const { email, projectId } = req.body;
@@ -331,11 +335,26 @@ export const forgotPassword = async (req, res, next) => {
   }
 };
 
-export const resetPassword =asyncHandler( async (req, res, next) => {
-  const token = '12mf dmf gmdf'
+export const resetPasswordUi=asyncHandler(async(req,res)=>{
+  const token = '12mfdmfflnekrjtnergmdf'
 
   res.render('resetpassword', { token, env: process.env.PUBLIC_URL });
+})
+
+export const resetPassword =asyncHandler( async (req, res, next) => {
+  // throw new AppError('Password incorr', 500);
+
+  const {password,allLogout}=req.body
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  console.log(token)
+  console.log(req.body)
+  console.log(password,allLogout)
+  res.status(200).json({
+    sttatus:"success"
+  })
 });
+// <-------- end of reset password 
 
 
 

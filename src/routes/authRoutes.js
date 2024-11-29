@@ -1,6 +1,6 @@
 import express from "express";
 
-import { register,verifyEmail,resendEmail,login,forgotPassword, resetPassword} from "../controllers/authcontroller.js";
+import { register,verifyEmail,resendEmail,login,forgotPassword, resetPassword,resetPasswordUi} from "../controllers/authcontroller.js";
 import { loginMiddleware } from "../middlewares/authMiddleware.js";
 
 const AuthRouter = express.Router();
@@ -13,4 +13,5 @@ export const authRouter = AuthRouter
 .post("/resend/email", resendEmail)
 .post("/login",loginMiddleware,login)
 .post("/forgetpassword",forgotPassword )  
-.get("/resetpassword/:token",resetPassword)   //static file for reset password
+.get("/resetpassword/:token",resetPasswordUi)   //static file for reset password
+.post("/reset/password",resetPassword)

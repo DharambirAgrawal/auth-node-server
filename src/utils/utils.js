@@ -6,6 +6,26 @@ export function validateEmail(email) {
     return emailRegex.test(email);
   }
 
+export function validatePassword(password) {
+    const minLength = 8;
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasNumber = /[0-9]/.test(password);
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+  
+    if (
+      password.length >= minLength &&
+      hasUpperCase &&
+      hasLowerCase &&
+      hasNumber &&
+      hasSpecialChar
+    ) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
 export async function hashData(data){
   const salt = await bcrypt.genSalt(10);
   return await bcrypt.hash(data, salt);
