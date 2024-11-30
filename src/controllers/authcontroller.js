@@ -183,7 +183,9 @@ export const login = asyncHandler(async (req, res) => {
     //     headers: myHeaders,
     //   }
     // )
-    const response = await fetch(`http://localhost:3000/api/auth/forgetpassword`,
+
+    const baseUrl = `${req.protocol}://${req.get('host')}`;
+    const response = await fetch(`${baseUrl}/api/auth/forgetpassword`,
       {
         method: "POST",
         body: JSON.stringify(data),
