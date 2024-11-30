@@ -413,7 +413,7 @@ export const resetPasswordUi = asyncHandler(async (req, res, next) => {
     return next()
   }
 
-  res.render('resetpassword', { token: forget_token, env: process.env.PUBLIC_URL });
+  res.render('resetpassword', { token: forget_token });
 })
 
 export const resetPassword = asyncHandler(async (req, res, next) => {
