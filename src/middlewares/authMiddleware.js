@@ -73,6 +73,7 @@ export const loginMiddleware = asyncHandler(async (req, res, next) => {
   }
 
   const payload = {
+    type:"access",
     email: email,
     sessionId: sessionId
   }

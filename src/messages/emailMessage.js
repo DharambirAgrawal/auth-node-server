@@ -1,6 +1,6 @@
 
 
-export const VERIFY_EMAIL_MESSAGE = (token) => {
+export const VERIFY_EMAIL_MESSAGE = (link) => {
   return {
     subject: '🎉 One quick step to get started!',
     html: `
@@ -281,7 +281,7 @@ export const VERIFY_EMAIL_MESSAGE = (token) => {
               </p>
 
               <div class="verification-code">
-                <a href="http://xyz.com/auth/${token}" class="button">Verify Your Email</a>
+                <a href="${link}" class="button">Verify Your Email</a>
               </div>
 
               <div class="expiry-notice">

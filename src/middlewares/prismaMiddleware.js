@@ -14,7 +14,8 @@ export const prisma = new PrismaClient().$extends({
         }
         
         //saving the verification token
-        const payload={
+        const payload={ 
+            type :"verifyEmail",
             email:args.data.email
         }
         const token=generateToken(payload, process.env.VERIFY_EMAIL_SECRET)
@@ -22,7 +23,8 @@ export const prisma = new PrismaClient().$extends({
         args.data.verificationToken=token
 
         // sending the email with the token
-        await sendEmail(args.data.email,VERIFY_EMAIL_MESSAGE(token))
+        const link=`${process.env.PUBLIC_URL}/api/auth/register/${token}`
+        await sendEmail(args.data.email,VERIFY_EMAIL_MESSAGE(link))
  
         return query(args);
       },
