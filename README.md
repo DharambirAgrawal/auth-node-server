@@ -40,7 +40,9 @@ A reusable authentication server with multi-tenancy support.
    EMAIL_PASSWORD="" # above email app password  
 
    TOKEN_SECRET="kdfnkdjfgkdf"
+
    FORGETPASSWORD_SECRET="kdfjsbdfisdufgisudfisdfsd"
+   
    SUSPEND_ACCOUNT_SECRET="jfngbjdfbgjdfgbjdf"
 
    PUBLIC_URL="http://localhost:3000"
